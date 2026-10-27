@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ensayo Mi Mascota</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: barra de pestañas arriba; cada modo es una columna de trabajo con un riel lateral que se apila en móvil */
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --fg:#17202e; --muted:#5d6878; --line:#dde2ea;
+  --accent:#1f4fa3; --accent-ink:#ffffff; --hi:#f2b33d; --hi-soft:#fdf1d8;
+  --ok:#1f8a5b; --ok-soft:#e1f3ea; --mid:#b7791f; --mid-soft:#fbefd9; --bad:#c2413b; --bad-soft:#f9e3e1;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", Consolas, ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141c; --surface:#18202b; --fg:#e6ebf2; --muted:#9aa6b6; --line:#2a3443;
+  --accent:#7aa5f0; --accent-ink:#0f141c; --hi:#f2b33d; --hi-soft:#3a2f17;
+  --ok:#4fc28c; --ok-soft:#173528; --mid:#e0a64a; --mid-soft:#3a2d16; --bad:#ef7a73; --bad-soft:#3d1d1c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141c; --surface:#18202b; --fg:#e6ebf2; --muted:#9aa6b6; --line:#2a3443;
+  --accent:#7aa5f0; --accent-ink:#0f141c; --hi:#f2b33d; --hi-soft:#3a2f17;
+  --ok:#4fc28c; --ok-soft:#173528; --mid:#e0a64a; --mid-soft:#3a2d16; --bad:#ef7a73; --bad-soft:#3d1d1c; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.55 var(--f-body);margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:1.6rem}
+h2{font-size:1.35rem}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;margin-bottom:18px}
+nav{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px}
+nav button{border:0;background:none;color:var(--muted);font:600 .95rem var(--f-body);padding:8px 14px;border-radius:7px;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+button{font-family:var(--f-body)}
+button:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--fg);font-weight:600;font-size:.95rem;padding:9px 16px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.grid{display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px}
+kbd{font:500 .75rem var(--f-mono);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;color:var(--muted)}
+.hint{color:var(--muted);font-size:.85rem}
+
+/* Exposición */
+.rail{display:flex;flex-direction:column;gap:2px}
+@media (max-width:760px){.rail{flex-direction:row;overflow-x:auto;padding-bottom:4px}.rail button{min-width:150px}}
+.rail button{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:center;text-align:left;border:0;background:none;color:var(--fg);padding:8px 10px;border-radius:8px;cursor:pointer;font-size:.9rem}
+.rail button[aria-current="true"]{background:var(--hi-soft)}
+.rail .num{font:500 .8rem var(--f-mono);color:var(--muted)}
+.rail .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.dot.r3{background:var(--ok)}.dot.r2{background:var(--mid)}.dot.r1{background:var(--bad)}
+.timers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
+.timer{border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.timer .big{font:500 2.1rem var(--f-mono);font-variant-numeric:tabular-nums;line-height:1.1}
+.timer .bar{height:6px;border-radius:3px;background:var(--line);margin-top:8px;overflow:hidden}
+.timer .bar i{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
+.timer.warn .big{color:var(--mid)}.timer.warn .bar i{background:var(--mid)}
+.timer.over .big{color:var(--bad)}.timer.over .bar i{background:var(--bad)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--muted);padding:7px 12px;font-weight:600;font-size:.85rem;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.parts{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.part{border-left:3px solid var(--line);padding:2px 0 2px 14px}
+.part button{all:unset;cursor:pointer;font-weight:600;color:var(--accent)}
+.part button:focus-visible{outline:3px solid var(--hi)}
+.part p{margin:4px 0 0;max-width:68ch}
+.part p.cue{color:var(--muted);font-style:italic}
+.rate{margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.rate .btn[aria-pressed="true"].g{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.rate .btn[aria-pressed="true"].m{background:var(--mid-soft);border-color:var(--mid);color:var(--mid)}
+.rate .btn[aria-pressed="true"].b{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+
+/* Preguntas */
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:14px}
+.filters label{display:flex;flex-direction:column;gap:3px;font-size:.78rem;color:var(--muted);font-weight:600}
+select{font:inherit;font-size:.92rem;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);max-width:100%}
+.check{flex-direction:row!important;align-items:center;gap:6px!important;padding-bottom:8px}
+.qcard{min-height:340px;display:flex;flex-direction:column;gap:14px}
+.qcard .q{font-family:var(--f-display);font-size:1.45rem;font-weight:500;line-height:1.3;text-wrap:balance}
+.chip{display:inline-block;font-size:.75rem;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--hi-soft);color:var(--fg)}
+.chip.src{background:var(--bg);border:1px solid var(--line);color:var(--muted)}
+textarea{width:100%;min-height:90px;font:inherit;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);resize:vertical}
+.countdown{height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.countdown i{display:block;height:100%;background:var(--accent);width:100%}
+.countdown.late i{background:var(--bad)}
+.answer{border-left:3px solid var(--accent);padding:4px 0 4px 16px}
+.answer p{margin:0 0 8px;max-width:70ch}
+.note{font-size:.9rem;padding:8px 12px;border-radius:8px}
+.note.avoid{background:var(--bad-soft)}.note.tip{background:var(--mid-soft)}
+.qnav{margin-top:auto;display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center}
+.btn.g{border-color:var(--ok);color:var(--ok)}.btn.m{border-color:var(--mid);color:var(--mid)}.btn.b{border-color:var(--bad);color:var(--bad)}
+.btn.g:hover{background:var(--ok-soft)}.btn.m:hover{background:var(--mid-soft)}.btn.b:hover{background:var(--bad-soft)}
+details.ref{font-size:.9rem}
+details.ref summary{cursor:pointer;font-weight:600}
+details.ref p{margin:8px 0 0}
+.empty{text-align:center;color:var(--muted);padding:48px 12px}
+
+/* Resultados */
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:20px}
+@media (max-width:640px){.kpis{grid-template-columns:minmax(0,1fr)}}
+.kpi .v{font:700 2.4rem var(--f-display);line-height:1.1}
+.kpi .pill{display:inline-block;margin-top:6px;font-size:.78rem;font-weight:600;padding:2px 10px;border-radius:99px}
+.pill.g{background:var(--ok-soft);color:var(--ok)}.pill.m{background:var(--mid-soft);color:var(--mid)}.pill.b{background:var(--bad-soft);color:var(--bad)}.pill.n{background:var(--bg);color:var(--muted)}
+.bars{display:flex;flex-direction:column;gap:8px}
+.barrow{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,2fr) 92px;gap:12px;align-items:center;font-size:.9rem}
+@media (max-width:640px){.barrow{grid-template-columns:minmax(0,1fr) 80px}.barrow .track{grid-column:1/-1;grid-row:2}}
+.track{height:10px;border-radius:5px;background:var(--line);overflow:hidden;display:flex}
+.track i{height:100%}
+.track .g{background:var(--ok)}.track .m{background:var(--mid)}.track .b{background:var(--bad)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.mono{white-space:nowrap}
+.weak{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.weak li{display:flex;gap:10px;align-items:baseline;font-size:.92rem}
+.section{margin-top:20px}
+.section > h2{margin-bottom:12px}
+/* Guía */
+.guide{max-width:780px}
+.guide h3{font-size:1.05rem;margin:24px 0 10px}
+.guide p{max-width:68ch;margin:8px 0}
+.guide .lead{font-size:1.08rem;margin-top:10px}
+.steps{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:8px;max-width:68ch}
+.steps li::marker{font-family:var(--f-mono);color:var(--accent)}
+.crit{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.crit{grid-template-columns:minmax(0,1fr)}}
+.crit > div{border:1px solid var(--line);border-radius:10px;padding:12px}
+.crit p{margin:8px 0 0;font-size:.92rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Mi Mascota · Coordinación de Gestión de Portafolio</div>
+      <h1>Ensayo de exposición y preguntas</h1>
+    </div>
+    <nav role="tablist" aria-label="Modo">
+      <button role="tab" id="tab-guide" aria-selected="false" data-view="guide">Guía</button>
+      <button role="tab" id="tab-expo" aria-selected="true" data-view="expo">Exposición</button>
+      <button role="tab" id="tab-qa" aria-selected="false" data-view="qa">Preguntas</button>
+      <button role="tab" id="tab-res" aria-selected="false" data-view="res">Resultados</button>
+    </nav>
+  </header>
+
+  <!-- GUÍA -->
+  <section id="view-guide" hidden>
+    <div class="panel guide">
+      <div class="eyebrow">Antes de empezar</div>
+      <h2>Cómo usar este ensayo</h2>
+      <p class="lead">Aquí practicas la exposición de 15 minutos con cronómetro y respondes las preguntas que puede hacer el jurado. Al final ves qué tan seguro estás y qué te falta repasar.</p>
+
+      <h3>Recorrido sugerido</h3>
+      <ol class="steps">
+        <li><b>Lee el guion una vez.</b> En Exposición, elige "Guion completo" y recorre las 8 slides sin cronómetro.</li>
+        <li><b>Ensaya con pistas.</b> Cambia a "Solo pistas", pulsa Iniciar y presenta en voz alta. Pasa de slide con → cuando termines cada una. Si te pierdes, haz clic en una pista para ver su texto.</li>
+        <li><b>Ensaya sin ayuda.</b> Con "Sin ayuda", repite la exposición completa. Reinicia los tiempos antes de cada vuelta para medirla limpia.</li>
+        <li><b>Califica cada slide al terminarla.</b> Fluida, con dudas o me trabé. Tu tiempo real contra el objetivo queda en Resultados.</li>
+        <li><b>Responde las preguntas por bloque.</b> En Preguntas, empieza por "Ensayo con el jurado" y luego pasa a "Q&amp;A por iniciativa". Responde en voz alta antes de ver la respuesta modelo.</li>
+        <li><b>Repasa lo débil.</b> En Resultados, pulsa "Practicar solo estas" y repite hasta que la lista quede vacía.</li>
+      </ol>
+
+      <h3>Cómo calificarte con honestidad</h3>
+      <div class="crit">
+        <div><span class="pill g">La sabía</span><p>Respondiste en menos de 45 segundos sin mirar, con el dato, lo que propones y lo que genera.</p></div>
+        <div><span class="pill m">A medias</span><p>Tenías la idea pero te faltó una cifra, te pasaste de tiempo o dudaste.</p></div>
+        <div><span class="pill b">No la sabía</span><p>Te quedaste en blanco o tu respuesta contradice la modelo.</p></div>
+      </div>
+
+      <h3>Cómo leer tus resultados</h3>
+      <p>"La sabía" vale 1 punto, "a medias" medio punto y "no la sabía" cero. Lo mismo en la exposición: fluida, con dudas y me trabé.</p>
+      <div class="row" style="gap:16px">
+        <span><span class="pill g">80% o más</span> Seguro</span>
+        <span><span class="pill m">50% a 79%</span> En camino</span>
+        <span><span class="pill b">Menos de 50%</span> A repasar</span>
+      </div>
+      <p>Llegar listo al día de la prueba es tener todos los bloques en verde y la exposición completa en menos de 15:15.</p>
+
+      <h3>Atajos de teclado</h3>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Dónde</th><th>Tecla</th><th>Qué hace</th></tr></thead>
+        <tbody>
+          <tr><td>Exposición</td><td><kbd>Espacio</kbd></td><td>Inicia o pausa el cronómetro</td></tr>
+          <tr><td>Exposición</td><td><kbd>←</kbd> <kbd>→</kbd></td><td>Slide anterior o siguiente</td></tr>
+          <tr><td>Preguntas</td><td><kbd>Espacio</kbd></td><td>Muestra la respuesta modelo</td></tr>
+          <tr><td>Preguntas</td><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></td><td>La sabía, a medias, no la sabía</td></tr>
+          <tr><td>Preguntas</td><td><kbd>→</kbd></td><td>Salta la pregunta</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Dónde se guarda tu progreso</h3>
+      <p>En el navegador donde practicas. Si cambias de PC o de navegador, empiezas de cero. Puedes borrarlo cuando quieras desde Resultados.</p>
+
+      <div class="row" style="margin-top:20px">
+        <button class="btn primary" id="startExpo">Empezar con la exposición</button>
+        <button class="btn" id="startQa">Ir a las preguntas</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPOSICIÓN -->
+  <section id="view-expo" class="grid" hidden>
+    <div class="rail" id="rail" aria-label="Slides"></div>
+    <div class="panel" id="slidePanel">
+      <div class="row" style="justify-content:space-between">
+        <div class="eyebrow" id="slideEyebrow"></div>
+        <div class="seg" role="group" aria-label="Qué ver del guion">
+          <button id="mode-cues" data-mode="cues" aria-pressed="true">Solo pistas</button>
+          <button id="mode-full" data-mode="full" aria-pressed="false">Guion completo</button>
+          <button id="mode-none" data-mode="none" aria-pressed="false">Sin ayuda</button>
+        </div>
+      </div>
+      <h2 id="slideTitle" style="margin-top:8px"></h2>
+      <div class="timers">
+        <div class="timer" id="tSlide"><div class="eyebrow">Esta slide</div><div class="big" id="tSlideV">0:00</div><div class="hint" id="tSlideT"></div><div class="bar"><i></i></div></div>
+        <div class="timer" id="tTotal"><div class="eyebrow">Total</div><div class="big" id="tTotalV">0:00</div><div class="hint">Objetivo 15:15 · tope 20:00</div><div class="bar"><i></i></div></div>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="play">Iniciar</button>
+        <button class="btn" id="prev">← Anterior</button>
+        <button class="btn" id="next">Siguiente →</button>
+        <button class="btn" id="resetExpo" style="margin-left:auto">Reiniciar tiempos</button>
+      </div>
+      <p class="hint" style="margin:8px 0 0"><kbd>Espacio</kbd> iniciar o pausar · <kbd>←</kbd> <kbd>→</kbd> cambiar slide · clic en una pista para ver su texto</p>
+      <div class="parts" id="parts"></div>
+      <div class="rate">
+        <div class="eyebrow" style="margin-bottom:8px">¿Cómo te salió esta slide?</div>
+        <div class="row" id="slideRate">
+          <button class="btn g" data-r="3" aria-pressed="false">Fluida</button>
+          <button class="btn m" data-r="2" aria-pressed="false">Con dudas</button>
+          <button class="btn b" data-r="1" aria-pressed="false">Me trabé</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PREGUNTAS -->
+  <section id="view-qa" hidden>
+    <div class="filters">
+      <label for="fSrc">Fuente<select id="fSrc">
+        <option value="all">Todas</option>
+        <option value="ens">Ensayo con el jurado</option>
+        <option value="ini">Q&amp;A por iniciativa</option>
+      </select></label>
+      <label for="fGroup">Bloque<select id="fGroup"></select></label>
+      <label for="fState">Mostrar<select id="fState">
+        <option value="all">Todas</option>
+        <option value="pending">Sin responder</option>
+        <option value="weak">Para repasar (a medias o no)</option>
+      </select></label>
+      <label class="check" for="fShuffle"><input type="checkbox" id="fShuffle" checked> Orden aleatorio</label>
+      <label class="check" for="fTimer"><input type="checkbox" id="fTimer" checked> Reloj de 45 s</label>
+    </div>
+    <div class="grid" style="grid-template-columns:minmax(0,1fr) 280px">
+      <div class="panel qcard" id="qcard"></div>
+      <aside class="panel" style="display:flex;flex-direction:column;gap:12px">
+        <div>
+          <div class="eyebrow">Progreso del filtro</div>
+          <div class="mono" style="font-size:1.4rem" id="qProg">0 / 0</div>
+          <div class="track" id="qTrack" style="margin-top:6px"></div>
+        </div>
+        <p class="hint" style="margin:0">Responde en voz alta en 30 a 45 segundos. Orden: <b>el dato, lo que propones y lo que genera.</b></p>
+        <p class="hint" style="margin:0"><kbd>Espacio</kbd> ver respuesta · <kbd>1</kbd> la sabía · <kbd>2</kbd> a medias · <kbd>3</kbd> no la sabía · <kbd>→</kbd> saltar</p>
+        <details class="ref"><summary>Cifras de referencia</summary><p id="cifras"></p></details>
+        <details class="ref"><summary>Escenarios de memoria</summary><p id="escen"></p></details>
+      </aside>
+    </div>
+  </section>
+
+  <!-- RESULTADOS -->
+  <section id="view-res" hidden>
+    <div class="kpis" id="kpis"></div>
+    <div class="panel section">
+      <h2>Seguridad por bloque</h2>
+      <p class="hint" style="margin:-6px 0 12px">Verde: la sabía · ámbar: a medias · rojo: no la sabía. El porcentaje cuenta a medias como medio punto.</p>
+      <div class="bars" id="groupBars"></div>
+    </div>
+    <div class="panel section">
+      <h2>Tiempos de la exposición</h2>
+      <div class="tablewrap"><table id="timeTable"></table></div>
+    </div>
+    <div class="panel section">
+      <div class="row" style="justify-content:space-between;margin-bottom:12px">
+        <h2>Para repasar</h2>
+        <button class="btn" id="goWeak">Practicar solo estas</button>
+      </div>
+      <ul class="weak" id="weakList"></ul>
+    </div>
+    <div class="row section">
+      <button class="btn" id="resetAll">Borrar todo el progreso</button>
+      <span class="hint">El progreso se guarda solo en este navegador.</span>
+    </div>
+  </section>
+</div>
+
+<script>
+const DATA = {"slides": [{"n": 1, "title": "Portada", "secs": 60, "parts": [{"label": "Gancho de apertura", "text": "\"Buenos días. Antes de empezar, un dato: hoy hay 792 familias en República Dominicana que decidieron que su mascota merece un seguro. Y le ponen a Mi Mascota un 92 de 100 en satisfacción. Eso no es un producto con problemas. Es un producto querido que todavía no llega a toda la gente que podría.\""}, {"label": "Qué voy a presentar", "text": "\"En los próximos 15 minutos les voy a mostrar tres cosas: dónde estamos frente al plan, por qué existe la brecha, y un plan concreto, con metas y semanas, para cerrar el Año 3 por encima de la meta.\""}, {"label": "Mi rol en esto", "text": "\"Lo hice como lo haría desde la coordinación de portafolio: primero los datos, después las causas, y al final un plan que se puede medir cada semana.\""}]}, {"n": 2, "title": "Diagnóstico: un producto querido, al 74% del plan", "secs": 120, "parts": [{"label": "La base sólida (las tres tarjetas azules)", "text": "\"Empiezo por lo bueno, porque es mucho. Satisfacción de 92. Siniestralidad de 30%, cuando el plan aceptaba 60%: el producto es rentable y tiene espacio. Y el ritmo de ventas casi se triplicó: de unas 21 pólizas al mes en 2025 a unas 60 entre mayo y septiembre de este año.\""}, {"label": "La brecha (tarjeta amarilla)", "text": "\"Aun así, a septiembre tenemos 792 pólizas vigentes contra unas 1,076 que pedía el plan. Estamos al 74%.\""}, {"label": "Leer la gráfica", "text": "[Señalar las barras de la derecha] \"Fíjense en la gráfica: el cambio de ritmo es real y es reciente. Mayo, junio, julio, agosto, septiembre: todos entre 46 y 70. Eso me dice que el motor ya arrancó.\""}, {"label": "Mensaje que deja la slide", "text": "\"Entonces el problema no es el producto ni la demanda. La brecha está en dónde vendemos y cómo retenemos. Y eso se puede gestionar.\""}]}, {"n": 3, "title": "Cuatro causas explican la brecha", "secs": 135, "parts": [{"label": "Introducción", "text": "\"Cuando desarmé la brecha, encontré cuatro causas. Y cada una tiene una palanca. No hay ningún hallazgo sin acción asociada.\""}, {"label": "Causa 1 · Sin canal bancario (0)", "text": "\"Cero pólizas por banca y canales alternos. En un mercado como el dominicano, donde la gente compra seguros donde ya tiene su dinero, eso es una puerta cerrada. Palanca: Bancaseguros 2.0 y Colectivo.\""}, {"label": "Causa 2 · Un solo motor (65%)", "text": "\"El 65% de las ventas sale del canal digital directo, Sarah y la web. Funciona, pero dependemos de un solo motor. Si ese motor se frena, se frena todo el producto. Palanca: activar intermediarios, telemarketing, oficinas y veterinarias.\""}, {"label": "Causa 3 · Fuga por cobro (64%) — el dato que más sorprende", "text": "[Pausa antes de decirlo] \"Y aquí está el hallazgo que más me llamó la atención. El 64% de las bajas no son clientes insatisfechos. Son tarjetas vencidas. La tarjeta del cobro venció, el cliente nunca puso la nueva, y la póliza se cayó. Nadie decidió irse. Eso es una causa operativa, y al mismo tiempo, la oportunidad de retención más barata que tenemos. Palanca: aviso de vencimiento, reintentos y recuperación.\""}, {"label": "Causa 4 · Compra poco guiada (73)", "text": "\"La nota más baja de la encuesta es claridad de coberturas: 73. El cliente compra, pero no siempre entiende qué compra. Palanca: un recomendador guiado en Sarah y un comparativo de planes.\""}]}, {"n": 4, "title": "Dónde actuar primero", "secs": 120, "parts": [{"label": "Panel izquierdo · canales", "text": "\"Si miro la anulación por canal, hay una diferencia enorme. Sarah, que es el canal que más vende, anula 28%. El APP de intermediarios y telemarketing anulan entre 11 y 12%: la mitad.\""}, {"label": "Qué hacer con eso", "text": "\"La lectura de portafolio es clara: acelerar los canales que retienen, APP y telemarketing, y en Sarah no frenar la venta, sino corregir el cobro recurrente, que es donde se le escapa la gente.\""}, {"label": "Panel derecho · bajas", "text": "\"De las 218 bajas, 177 eran evitables: el 81%. Y de esas, 140 son falta de pago. Solo 8 son por fallecimiento de la mascota, que es lo natural.\""}, {"label": "Mensaje que deja la slide", "text": "\"Con una satisfacción de 92, esto no es un problema de producto. Es un problema de cobro. Y los problemas de cobro se resuelven con proceso, no con descuentos.\""}]}, {"n": 5, "title": "Ocho palancas llevan a 1,892 en jul-27", "secs": 150, "parts": [{"label": "El punto de partida honesto", "text": "[Señalar la barra gris de la izquierda] \"Si no hacemos nada distinto, con 60 ventas al mes y la anulación actual, llegamos a julio de 2027 con unas 1,196 pólizas. Muy lejos de las 1,855 de la meta.\""}, {"label": "Recorrer la cascada", "text": "\"Cada barra es una palanca con su aporte. Primero retener: +28. Después el motor actual: Sarah y web +100, telemarketing +58, intermediarios +73, campaña a asegurados de Humano +102 y recuperar anuladas +36. Y en amarillo, los canales nuevos: veterinarias +74, Colectivo +142 y Bancaseguros 2.0 +84.\""}, {"label": "Los tres motores (tarjetas de abajo)", "text": "\"Esto se agrupa en tres motores que corren en paralelo. Motor actual, +369. Retención, +28. Canales nuevos, +300. Y quiero que se queden con esto: el 57% del avance sale de lo que ya funciona hoy. No dependo de que todo lo nuevo salga perfecto.\""}, {"label": "Resultado y colchón", "text": "\"El resultado: 1,892 pólizas, 102% de la meta. Y lo probé contra escenarios: si las palancas rinden solo el 80%, la meta llega en agosto, un mes tarde. Si la base de ventas fuera 53 en vez de 60, llego al 98%. Es un plan con margen, no un plan que necesita que todo salga bien.\""}]}, {"n": 6, "title": "Colectivo: la palanca más grande", "secs": 120, "parts": [{"label": "Por qué Colectivo", "text": "\"La palanca individual más grande es Colectivo: unas 142 pólizas a julio. La idea es simple: ofrecer Mi Mascota como beneficio voluntario a los colaboradores de empresas.\""}, {"label": "La cuenta (franja de arriba)", "text": "\"La matemática es conservadora. Empresas de 500 colaboradores, 3% de adopción, 3 empresas nuevas al mes desde abril: 45 pólizas al mes en julio. En Estados Unidos la adopción va de 5 a 11%; para República Dominicana uso 3% a propósito.\""}, {"label": "Cómo se ejecuta (cuatro bloques)", "text": "\"Priorizo empresas de más de 200 colaboradores, digitales o remotas, sin alianza con otra aseguradora. Lo posiciono como un beneficio que a la empresa no le cuesta y que le ayuda a atraer y retener talento. Y como coordinadora, sé que esto no lo saca un área sola: Comercial empresas es el dueño, pero necesito a Actuaría, Legal, Cobros y RRHH en la mesa desde el día uno.\""}, {"label": "Arranque rápido y cronograma", "text": "\"Para no esperar a integrar nómina, la fase 1 funciona con un código de empresa. Semanas 1 a 4: 30 empresas en el embudo. Semanas 3 a 7: encuesta a RRHH y kit B2B. Semanas 8 a 13: 5 empresas firmadas. Y de abril a julio, 3 nuevas por mes. Lo mido con adopción, anulación a 90 días por debajo de 15% y costo por póliza.\""}]}, {"n": 7, "title": "90 días: de 60 a 130 ventas al mes", "secs": 120, "parts": [{"label": "Cómo leer el plan", "text": "\"Esto es lo que pasa del 4 de enero al 29 de marzo de 2027. Trece semanas, tres motores en paralelo, y cada línea tiene una meta medible a la derecha.\""}, {"label": "Motor actual (azul)", "text": "\"En azul, vender más con lo que ya tenemos: recomendador en Sarah, campaña a asegurados de Humano con 20 pólizas al mes, intermediarios con kit e incentivo, telemarketing saliente y recuperar 40 anuladas.\""}, {"label": "Retención (verde)", "text": "\"En verde, el cobro: aviso de vencimiento de tarjeta y una ventana de recuperación a 30, 60 y 90 días. Meta a 90 días: bajar la anulación mensual de 2.0 a 1.6%. Y empujar el pago anual, que elimina el problema de la tarjeta de raíz.\""}, {"label": "Canales nuevos (amarillo)", "text": "\"En amarillo, Colectivo, veterinarias con código de referido y Bancaseguros 2.0 con cooperativas y banca digital. Arrancan desde la semana 1 porque son los que más tardan en madurar.\""}, {"label": "Gobierno y datos (gris) — el rol de coordinación", "text": "\"Y en gris, lo que hace que todo lo demás funcione. En la semana 1 concilio la base: qué tarjetas vencen y dónde se abandona la compra. Una revisión de producto con 4 decisiones: senior, felino y tarifa. Y un tablero semanal por palanca con comité. Si una palanca se atrasa, lo sé en una semana, no a fin de trimestre.\""}]}, {"n": 8, "title": "Año 3 al 102%; Año 4 superado", "secs": 90, "parts": [{"label": "Los dos números", "text": "\"Con esta ruta cerramos julio de 2027 con 1,892 pólizas, 102% de la meta del Año 3. Y como las palancas siguen sumando, julio de 2028 llega a 4,122: 125% de la meta del Año 4.\""}, {"label": "Leer la gráfica", "text": "[Señalar las tres líneas] \"La línea gris es lo que pasa si no hacemos nada. La blanca es el plan. La amarilla es la ruta: empieza por debajo, cruza el plan en julio de 2027 y a partir de ahí se separa.\""}, {"label": "Lo que necesito para arrancar (el cierre)", "text": "\"Para arrancar el 4 de enero necesito tres cosas. Una: aprobar el aviso de vencimiento de tarjeta y la campaña a asegurados. Dos: un ejecutivo B2B dedicado a Colectivo. Tres: un mandato para Bancaseguros 2.0 con cooperativas.\""}, {"label": "Frase final", "text": "[Pausa, mirar a la entrevistadora] \"Mi Mascota ya se ganó el cariño de sus clientes. Lo que le falta es gestión de portafolio: más motores, menos fuga y seguimiento cada semana. Eso es lo que vengo a hacer. Muchas gracias, quedo atenta a sus preguntas.\""}]}], "questions": [{"src": "ens", "group": "Bloque 1 · «¿Es creíble tu ruta?»", "n": 1, "q": "Pasar de 60 a 230 ventas al mes es casi cuatro veces. ¿No es irreal?", "a": "Es ambicioso y está armado para lograrse. En 2026 el ritmo ya pasó de ~21 a ~60 al mes cuando se empujó el producto. La meta de marzo es ~130 y sale de canales que ya existen. El salto de julio viene de tres canales que hoy venden cero: Colectivo, veterinarias y Bancaseguros 2.0. Y tengo colchón: si las palancas rinden 80%, la meta llega en agosto.", "eval": "si defiendes la ambición con datos o si te desinflas.", "avoid": "«bueno, son supuestos».", "tip": "", "id": "ens0"}, {"src": "ens", "group": "Bloque 1 · «¿Es creíble tu ruta?»", "n": 2, "q": "Tus metas por palanca, ¿de dónde salen? Parecen números puestos.", "a": "Cada meta parte de un dato del caso. Los intermediarios venden ~15 al mes y la meta es duplicarlos, empezando por el APP, que anula solo 11%, y sumando Savy. Sarah y web suman +15 al mes. Hay 177 anulaciones evitables, 140 por tarjeta vencida, y la meta es recuperar 40, una de cada cuatro. Todo está en celdas editables del Excel, con dueño y semáforo semanal.", "eval": "rigor.", "avoid": "", "tip": "", "id": "ens1"}, {"src": "ens", "group": "Bloque 1 · «¿Es creíble tu ruta?»", "n": 3, "q": "Los datos no cuadran: la serie mensual suma 792 y no 1,010. ¿Por qué confiar en tu análisis?", "a": "Lo detecté. La serie mensual son pólizas vigentes por mes de emisión (792) y la tabla de canales son emitidas (1,010); la diferencia son las 218 bajas. Por eso mido la brecha con vigentes y los canales con emitidas. La conciliación es lo primero que pido en la semana 1.", "eval": "pensamiento crítico sin ponerte a la defensiva.", "avoid": "criticar a quien armó los datos.", "tip": "", "id": "ens2"}, {"src": "ens", "group": "Bloque 2 · Los canales difíciles", "n": 4, "q": "Bancaseguros no se cerró en dos años. ¿Por qué crees que tú lo cierras en 13 semanas?", "a": "Mi hipótesis es económica: una prima de ~RD$12 mil al año deja poca comisión al banco y la integración le cuesta. Cambio la propuesta: el seguro ligado a la cuenta con débito automático, que no vence como una tarjeta, y llevo datos propios de siniestralidad (30%) y retención. Empiezo por cooperativas, que deciden más rápido. Y la ruta no depende de esto: sin Bancaseguros llego a 1,808 (97%) y a la meta en agosto.", "eval": "si propones algo distinto o repites lo que ya falló.", "avoid": "«el equipo anterior no lo hizo bien».", "tip": "", "id": "ens3"}, {"src": "ens", "group": "Bloque 2 · Los canales difíciles", "n": 5, "q": "Colectivo existe desde fines de 2025 y no ha despegado. ¿Qué cambia contigo?", "a": "Tres cosas. Un dueño con dedicación: es uno de mis tres pedidos. Una fase 1 sin nómina, con código de empresa, para no depender de cambios en cada empresa. Y un embudo con meta: 30 empresas, 5 firmadas en marzo y 3 nuevas por mes desde abril. Priorizo empresas de 200 o más colaboradores, digitales o remotas, sin alianza con otra aseguradora, y las activo con un evento y un kit.", "eval": "si sabes ejecutar un canal B2B.", "avoid": "", "tip": "", "id": "ens4"}, {"src": "ens", "group": "Bloque 2 · Los canales difíciles", "n": 6, "q": "¿Por qué 3% de adopción y no 1%?", "a": "En EE.UU. la adopción va de 5% a 11%. Uso 3% porque aquí el seguro de mascotas es menos conocido. Aun si fuera la mitad, Colectivo aportaría ~70 en vez de ~142 y la cartera llegaría a 1,821 (98%). La encuesta a RRHH de las semanas 3 a 7 lo valida antes de escalar.", "eval": "si tu supuesto aguanta un escenario malo.", "avoid": "", "tip": "", "id": "ens5"}, {"src": "ens", "group": "Bloque 2 · Los canales difíciles", "n": 7, "q": "Sarah anula 28%. ¿Por qué empujar más ventas por ahí?", "a": "Por eso primero se corrige y después se empuja. Hay 24 anulaciones por errores o duplicados nuestros, y muchas bajas por falta de pago son tarjetas que vencen meses después de la venta. En las semanas 1 a 6 se valida cédula y mascota y arranca el aviso de vencimiento; recién entonces se sube la conversión con el recomendador guiado y el cotizador.", "eval": "si priorizas calidad antes que volumen.", "avoid": "", "tip": "", "id": "ens6"}, {"src": "ens", "group": "Bloque 3 · Dinero y rentabilidad", "n": 8, "q": "¿Cuánto cuesta tu plan?", "a": "La mayoría de las palancas son de bajo costo. Los asegurados de Humano y Sarah no pagan comisión, y telemarketing y oficinas son equipo propio. Los costos variables son la comisión de intermediarios y de cooperativas, y solo se pagan si hay venta. El único costo fijo nuevo es un ejecutivo B2B. El presupuesto detallado lo cierro en la semana 2, con los gastos reales.", "eval": "criterio financiero.", "avoid": "", "tip": "⚠ Es tu pregunta más débil: el plan no está costeado en detalle. Prepárate: ten a mano el costo aproximado de un ejecutivo B2B y de una campaña de correo y Sarah.", "id": "ens7"}, {"src": "ens", "group": "Bloque 3 · Dinero y rentabilidad", "n": 9, "q": "30% de siniestralidad en una cartera joven. ¿No estás vendiendo una rentabilidad que no existe?", "a": "Va a subir y está contemplado: el 30% es dato del caso y es de una cartera joven, con carencias. Por eso medí la ruta con un escenario de estrés de 40% de siniestralidad (supuesto mío) y aun así el resultado técnico supera al del caso. Propongo seguimiento mensual por plan y edad y revisar la tarifa en marzo.", "eval": "prudencia técnica.", "avoid": "", "tip": "", "id": "ens8"}, {"src": "ens", "group": "Bloque 3 · Dinero y rentabilidad", "n": 10, "q": "¿Por qué no bajar el precio para vender más?", "a": "Con satisfacción de 92 y la primera causa de bajas siendo una tarjeta vencida, el precio no es el freno principal. Bajar la lista recorta margen sin atacar el alcance. Lo que sí pruebo es un descuento por pago anual: mide si el precio frena y además elimina el problema de la tarjeta.", "eval": "si distingues un problema de precio de uno de alcance.", "avoid": "", "tip": "", "id": "ens9"}, {"src": "ens", "group": "Bloque 4 · Ejecución y liderazgo", "n": 11, "q": "Como coordinadora no mandas sobre Comercial ni Tecnología. ¿Cómo logras que hagan esto?", "a": "Con tres cosas. Un dueño por palanca, acordado con cada área. Un tablero semanal que muestra a todos lo mismo. Y victorias tempranas: Sarah y la recuperación de anuladas dan resultados en 4 a 6 semanas y eso genera tracción. Lo que necesita decisión superior lo llevo al comité con datos.", "eval": "madurez para el rol.", "avoid": "", "tip": "", "id": "ens10"}, {"src": "ens", "group": "Bloque 4 · Ejecución y liderazgo", "n": 12, "q": "Si te recortan el equipo a la mitad, ¿qué sacas?", "a": "Mantengo lo que más aporta por peso invertido: Colectivo (+142), asegurados de Humano (+102, sin comisión), Sarah y web (+100) y el aviso de vencimiento. Muevo para después la revisión de producto y escalo las veterinarias más lento.", "eval": "priorización real.", "avoid": "", "tip": "", "id": "ens11"}, {"src": "ens", "group": "Bloque 4 · Ejecución y liderazgo", "n": 13, "q": "¿Qué haces el lunes 4 de enero?", "a": "Pido los datos: conciliación de 792 frente a 1,010, tarjetas que vencen en los próximos 90 días, abandono de cotización por paso y contacto de las 140 anuladas por tarjeta vencida. Arranco el aviso de vencimiento, la lista de 30 empresas para Colectivo y el contacto a las anuladas. Y monto el tablero semanal con la meta de cada palanca.", "eval": "enfoque en la ejecución.", "avoid": "", "tip": "", "id": "ens12"}, {"src": "ens", "group": "Bloque 4 · Ejecución y liderazgo", "n": 14, "q": "En marzo, ¿cómo sabremos si vas bien?", "a": "Con cinco números: ~130 ventas al mes, anulación de 1.6%, 5 empresas de Colectivo, 10 veterinarias activas y un acuerdo de Bancaseguros. Si una palanca va por debajo de 80% de su meta, el esfuerzo pasa a la que va adelante. Comparo contra marzo de 2026, no contra el promedio del año, por la estacionalidad.", "eval": "orientación a resultados.", "avoid": "", "tip": "", "id": "ens13"}, {"src": "ens", "group": "Bloque 5 · Notas de campo y sensibilidad", "n": 15, "q": "¿Y si el 30% de siniestralidad significa que no usan el seguro?", "a": "Lo vigilo. El 30% es favorable frente al 60% del plan, pero es una cartera joven con carencias: no lo presento como rentabilidad probada. En la semana 1 pido siniestros por plan, edad y antigüedad. Y no lo uso para explicar las bajas: el caso aclaró que la falta de pago es una tarjeta vencida.", "eval": "si distingues un indicador favorable de una rentabilidad probada.", "avoid": "«el 30% prueba que el producto es rentable».", "tip": "", "id": "ens14"}, {"src": "ens", "group": "Bloque 5 · Notas de campo y sensibilidad", "n": 16, "q": "Probaste comprar con Sarah. ¿Qué encontraste y qué haces con eso?", "a": "Fue un caso, no una muestra. Sarah mostró los dos planes sin recomendar ninguno, no tenía opción de mestizo, exigía la edad exacta y no mostraba la cuota mensual. Propongo un recomendador de cuatro o cinco preguntas y un comparativo de una página. Lo contrasto en la semana 1 con el abandono por paso: si el dato no lo confirma, lo ajusto.", "eval": "si usas evidencia propia sin exagerarla.", "avoid": "", "tip": "", "id": "ens15"}, {"src": "ens", "group": "Bloque 5 · Notas de campo y sensibilidad", "n": 17, "q": "¿La estacionalidad no compromete la meta de marzo?", "a": "Es un riesgo y lo declaro: enero a marzo fue el trimestre más débil de 2025. Es una hipótesis, porque la serie son vigentes por mes de emisión, y la confirmo con las 1,010. Por eso el plan no depende de enero: todo arranca en la semana 1 y se mide contra enero de 2026.", "eval": "si reconoces un riesgo real sin esconderlo.", "avoid": "", "tip": "", "id": "ens16"}, {"src": "ens", "group": "Bloque 5 · Notas de campo y sensibilidad", "n": 18, "q": "Dar hasta 90 días para pagar: ¿no estás regalando cobertura?", "a": "No lo propongo como decisión sino como una opción a evaluar con Legal y Actuaría. La idea es una ventana para actualizar la tarjeta y ponerse al día, porque estas bajas no son clientes que se quieren ir. Qué pasa con la cobertura y si hay carencia nueva lo definen ellos. Lo decide un dato de la semana 1: cuántas de las 140 intentaron pagar después del día 30. Si son pocas, la descarto.", "eval": "criterio de riesgo y de negocio.", "avoid": "prometer cobertura sin consultar a Legal y Actuaría.", "tip": "", "id": "ens17"}, {"src": "ens", "group": "Bloque 5 · Notas de campo y sensibilidad", "n": 19, "q": "¿Por qué evitar empresas que ya tienen otra aseguradora?", "a": "Porque con 30 empresas en el embudo y un solo ejecutivo, el tiempo se gasta donde hay más probabilidad de firmar. Si RRHH ya tiene un proveedor, cambiarlo cuesta más que el beneficio. No las descarto para siempre: entran en una segunda ola cuando tenga casos de éxito.", "eval": "si priorizas por probabilidad de cierre.", "avoid": "", "tip": "", "id": "ens18"}, {"src": "ens", "group": "Bloque 5 · Notas de campo y sensibilidad", "n": 20, "q": "¿Por qué tomas 60 de base y no el promedio del año?", "a": "Porque el ritmo cambió en mayo: desde mayo ningún mes bajó de 46, así que promediar el año mezcla dos niveles distintos. Aun así es un supuesto y lo declaro: con 53 la ruta llega al 98%, con 43 al 93% y con 38 al 91%. Por eso hay tablero semanal: si el ritmo real es menor, se ve en las primeras semanas.", "eval": "si defiendes una elección de datos y reconoces cuánto pesa.", "avoid": "«es lo que dan los datos» sin mostrar la sensibilidad.", "tip": "", "id": "ens19"}, {"src": "ens", "group": "Bloque 5 · Notas de campo y sensibilidad", "n": 21, "q": "La satisfacción de 92 es solo de los que se quedaron. ¿No te engaña?", "a": "Tiene razón: la encuesta se envió a las pólizas vigentes y no incluye a quienes anularon. Pero aquí el sesgo pesa menos, porque 64% de las bajas es una tarjeta vencida, no una queja. Igual sumo una encuesta de salida corta a quien anula por solicitud propia y mido abandono de cotización, no solo satisfacción.", "eval": "si entiendes el sesgo de una encuesta.", "avoid": "", "tip": "", "id": "ens20"}, {"src": "ens", "group": "Bloque 6 · Refutaciones directas a lo que dices en las slides", "n": 22, "q": "El 74% depende de tu interpolación del plan. ¿No lo estás armando a tu favor?", "a": "Al contrario: la interpolación lineal es la lectura más exigente, porque reparte la meta del Año 3 parejo desde agosto. Si el plan esperaba más ventas al final del año, la brecha de hoy sería menor. Lo declaro como supuesto en la nota de la slide y lo ajusto si existe el plan mensual oficial.", "eval": "honestidad con los supuestos.", "avoid": "", "tip": "", "id": "ens21"}, {"src": "ens", "group": "Bloque 6 · Refutaciones directas a lo que dices en las slides", "n": 23, "q": "El ×2.8 es estacionalidad: junio a septiembre siempre es pico.", "a": "Lo revisé contra los mismos meses de 2025, que también fueron pico, y 2026 está muy por encima. Aun así no me apoyo solo en eso: por eso muestro la sensibilidad con base 53, que llega al 98%.", "eval": "si separas tendencia de estacionalidad.", "avoid": "", "tip": "", "id": "ens22"}, {"src": "ens", "group": "Bloque 6 · Refutaciones directas a lo que dices en las slides", "n": 24, "q": "Que el 64% sean tarjetas vencidas puede ser la excusa de quien ya no quería pagar.", "a": "Es posible en una parte, y por eso no lo doy por cerrado. El caso aclaró que es tarjeta vencida no reemplazada, y la satisfacción de 92 no apunta a rechazo del producto. La prueba está en un dato de la semana 1: cuántos de los 140 responden al contacto y reactivan. La meta de 40 reactivadas ya asume que la mayoría no vuelve.", "eval": "si cuestionas tu propio dato.", "avoid": "", "tip": "", "id": "ens23"}, {"src": "ens", "group": "Bloque 6 · Refutaciones directas a lo que dices en las slides", "n": 25, "q": "El 65% en digital no es un problema; es el canal más barato.", "a": "De acuerdo, es eficiente y no lo quiero reducir. El problema es depender de él: si Sarah se cae o se encarece la pauta, cae todo el producto. Además Sarah anula 28%. La propuesta no le quita ventas al digital: le suma motores al lado.", "eval": "si entiendes riesgo de concentración.", "avoid": "", "tip": "", "id": "ens24"}, {"src": "ens", "group": "Bloque 6 · Refutaciones directas a lo que dices en las slides", "n": 26, "q": "Savy con 5 pólizas y oficinas con 10 no dicen nada estadísticamente.", "a": "Correcto, y por eso no decido nada con ellas: las muestro para que el gráfico esté completo, pero sin meta propia. Savy va dentro de intermediarios y oficinas dentro de telemarketing. Las decisiones de canal las tomo con Sarah, web, telemarketing e intermediarios, que tienen más de 100 pólizas cada uno.", "eval": "rigor con muestras pequeñas.", "avoid": "", "tip": "", "id": "ens25"}, {"src": "ens", "group": "Bloque 6 · Refutaciones directas a lo que dices en las slides", "n": 27, "q": "Telemarketing anula menos porque vende a gente ya convencida, no porque sea mejor canal.", "a": "Puede ser, y esa es justamente la lección: la venta asistida, donde alguien explica, retiene más. Por eso la palanca de Sarah es un recomendador guiado: llevar al digital lo que hace telemarketing. No dependo de que telemarketing escale sin límite: su meta es +10 al mes.", "eval": "si sacas la lección correcta de un dato.", "avoid": "", "tip": "", "id": "ens26"}, {"src": "ens", "group": "Bloque 6 · Refutaciones directas a lo que dices en las slides", "n": 28, "q": "La slide 5 dice anulación de 1.5% y la slide 7 dice 1.6%. ¿Cuál es?", "a": "Las dos: 1.6% es la meta a 90 días, en marzo, y 1.5% es la meta al cierre del Año 3, cuando el aviso de vencimiento y el pago anual ya maduraron.", "eval": "atención al detalle.", "avoid": "", "tip": "", "id": "ens27"}, {"src": "ens", "group": "Bloque 6 · Refutaciones directas a lo que dices en las slides", "n": 29, "q": "¿Un 125% del Año 4 no es vender humo?", "a": "Mi compromiso es el Año 3 al 102%. El Año 4 es una proyección para mostrar que los canales nuevos siguen sumando después de madurar. La recalibro en el comité con los datos reales de 2027.", "eval": "si sabes qué compromete y qué proyecta.", "avoid": "", "tip": "", "id": "ens28"}, {"src": "ens", "group": "Bloque 6 · Refutaciones directas a lo que dices en las slides", "n": 30, "q": "El dato de adopción es de EE.UU. Aquí no aplica.", "a": "Por eso no uso 5–11%, uso 3%, y lo valido con la encuesta a RRHH antes de escalar. Con la mitad, 1.5%, la ruta llega al 98%. La referencia sirve como techo, no como promesa.", "eval": "uso de referencias externas.", "avoid": "", "tip": "", "id": "ens29"}, {"src": "ens", "group": "Bloque 7 · «Eso ya se intentó y no funcionó, ¿qué otra cosa harías?»", "n": 31, "q": "Los avisos de vencimiento ya se mandan y la gente no actualiza la tarjeta.", "a": "Entonces el problema no es avisar, es la fricción. Tres alternativas: uno, que el aviso traiga un enlace de pago de un clic por WhatsApp, no un correo que pide entrar al portal. Dos, la actualización automática de tarjetas que ofrecen las redes (Visa y Mastercard) a través del adquirente, que cambia el número sin que el cliente haga nada; lo verifico con el procesador. Tres, mover a la gente fuera de la tarjeta: débito a cuenta o pago anual con descuento.", "eval": "si tienes un plan B para tu palanca principal de retención.", "avoid": "", "tip": "", "id": "ens30"}, {"src": "ens", "group": "Bloque 7 · «Eso ya se intentó y no funcionó, ¿qué otra cosa harías?»", "n": 32, "q": "La campaña a asegurados de Humano ya se hizo y convirtió poco.", "a": "Cambio el momento y el mensajero. En vez de un correo masivo, lo ofrezco en momentos de contacto: la renovación de su póliza, el portal o la app de Humano, y a través del corredor que ya lo atiende. Pruebo un descuento por tener varias pólizas. Y pruebo dos mensajes distintos (consulta veterinaria frente a responsabilidad civil) para ver cuál convierte.", "eval": "si sabes cambiar el cómo, no solo repetir.", "avoid": "", "tip": "", "id": "ens31"}, {"src": "ens", "group": "Bloque 7 · «Eso ya se intentó y no funcionó, ¿qué otra cosa harías?»", "n": 33, "q": "A los intermediarios ya se les dio incentivo y no venden mascotas.", "a": "Mi hipótesis es que con una prima baja la comisión no compensa el esfuerzo de una venta aparte. Entonces no la vendo aparte: la ofrezco como complemento de un clic en la cotización de auto y hogar dentro del APP. Me concentro en los corredores que más venden, no en todos. Y pago un bono por pólizas que siguen activas a los 90 días, para premiar calidad.", "eval": "si entiendes la economía del canal.", "avoid": "", "tip": "", "id": "ens32"}, {"src": "ens", "group": "Bloque 7 · «Eso ya se intentó y no funcionó, ¿qué otra cosa harías?»", "n": 34, "q": "Telemarketing saliente ya se probó y no rindió.", "a": "Probablemente se llamó a bases frías. Lo cambio a bases calientes: cotizaciones abandonadas en Sarah y web, llamadas en menos de 24 horas, y las 140 anuladas por tarjeta vencida. Es la misma gente, pero con intención de compra demostrada.", "eval": "si cambias la base, no solo el canal.", "avoid": "", "tip": "", "id": "ens33"}, {"src": "ens", "group": "Bloque 7 · «Eso ya se intentó y no funcionó, ¿qué otra cosa harías?»", "n": 35, "q": "Colectivo ya se intentó con empresas y no hubo interés.", "a": "Primero miro con quién se intentó y cómo. Si las empresas no responden, cambio de puerta. Uno: las empresas que ya tienen salud colectivo con Humano, donde ya hay relación y RRHH nos conoce. Dos: grupos de afinidad, como colegios profesionales, asociaciones, cooperativas de empleados y residenciales. Tres: los corredores que ya manejan colectivos de salud, con comisión por póliza.", "eval": "si tienes más de una ruta B2B.", "avoid": "", "tip": "", "id": "ens34"}, {"src": "ens", "group": "Bloque 7 · «Eso ya se intentó y no funcionó, ¿qué otra cosa harías?»", "n": 36, "q": "Bancaseguros 2.0 tampoco va a funcionar; los bancos no quieren.", "a": "El objetivo no es el banco, es estar donde el cliente ya paga. Si los bancos no quieren, voy a seguros integrados en otro punto de compra: tiendas de mascotas en el pago, billeteras digitales y fintech, y refugios que entregan mascotas en adopción, con el primer mes como bienvenida. Sin Bancaseguros la ruta llega a 1,808 (97%), así que el plan no se cae.", "eval": "si sabes buscar el mismo efecto por otra vía.", "avoid": "", "tip": "", "id": "ens35"}, {"src": "ens", "group": "Bloque 7 · «Eso ya se intentó y no funcionó, ¿qué otra cosa harías?»", "n": 37, "q": "Las veterinarias no quieren ser vendedoras de seguros.", "a": "Tiene sentido: no les pido que vendan, les doy una razón. Una red de veterinarias preferidas donde Humano paga directo y rápido; al cliente asegurado le resulta más fácil pagar la consulta, y eso le conviene a la veterinaria. El código de referido es solo para medir. Si aun así no funciona, muevo el punto físico a tiendas de mascotas y peluquerías caninas.", "eval": "si piensas en el incentivo del socio.", "avoid": "", "tip": "", "id": "ens36"}, {"src": "ens", "group": "Bloque 7 · «Eso ya se intentó y no funcionó, ¿qué otra cosa harías?»", "n": 38, "q": "Tecnología no puede hacer el recomendador en Sarah este trimestre.", "a": "Hago la versión sin desarrollo: un comparativo de una página, una tabla en la web y un guion para Sarah con tres o cuatro preguntas. Lo mido con abandono y conversión. Si mejora, eso justifica la prioridad en Tecnología para el trimestre siguiente.", "eval": "si tienes una salida sin depender de otra área.", "avoid": "", "tip": "", "id": "ens37"}, {"src": "ens", "group": "Bloque 7 · «Eso ya se intentó y no funcionó, ¿qué otra cosa harías?»", "n": 39, "q": "Ya se llamó a las anuladas y no regresan.", "a": "Cambio la oferta: reactivación sin carencia nueva si se ponen al día en una ventana corta (a validar con Actuaría), y pago anual con descuento para que no vuelva a pasar. Si aun así no regresan, esas 40 se reemplazan con ventas nuevas de Colectivo, que es la palanca más grande.", "eval": "si cambias la oferta, no solo insistes.", "avoid": "", "tip": "", "id": "ens38"}, {"src": "ens", "group": "Bloque 8 · «Si te pidiera un cambio…»", "n": 40, "q": "Olvida el crecimiento: este año el foco es rentabilidad.", "a": "Entonces reordeno sin cambiar el diagnóstico. Primero retención y cobro, porque cada póliza retenida no tiene costo de venta. Después canales sin comisión: asegurados de Humano, Sarah y oficinas. Pago anual con descuento, revisión de tarifa del plan senior y seguimiento de siniestralidad por edad. La meta pasa de pólizas a resultado técnico.", "eval": "flexibilidad y criterio de portafolio.", "avoid": "", "tip": "", "id": "ens39"}, {"src": "ens", "group": "Bloque 8 · «Si te pidiera un cambio…»", "n": 41, "q": "No hay presupuesto para el ejecutivo B2B.", "a": "Llevo Colectivo con corredores que ya venden colectivos de salud, pagando comisión solo por póliza, y yo misma cierro las primeras cinco empresas para probar el modelo. Si las cinco funcionan, ese resultado es el argumento para pedir el puesto en el siguiente presupuesto.", "eval": "si tu plan sobrevive sin tu pedido.", "avoid": "", "tip": "", "id": "ens40"}, {"src": "ens", "group": "Bloque 8 · «Si te pidiera un cambio…»", "n": 42, "q": "Solo puedes hacer tres cosas. ¿Cuáles?", "a": "Una por motor: el aviso de vencimiento con pago de un clic (retención, costo bajo, efecto inmediato), la campaña a asegurados de Humano (+102, sin comisión) y Colectivo (+142, la palanca más grande). Juntas son cerca del 40% del avance de la ruta.", "eval": "priorización bajo restricción.", "avoid": "", "tip": "", "id": "ens41"}, {"src": "ens", "group": "Bloque 8 · «Si te pidiera un cambio…»", "n": 43, "q": "Necesito ver resultados antes de enero.", "a": "En noviembre y diciembre arranco lo que no necesita aprobación ni desarrollo: la conciliación de datos, la lista de tarjetas que vencen, la llamada a las anuladas, la lista de 30 empresas y el comparativo de una página. El 4 de enero empiezo con el embudo ya armado.", "eval": "sentido de urgencia.", "avoid": "", "tip": "", "id": "ens42"}, {"src": "ens", "group": "Bloque 8 · «Si te pidiera un cambio…»", "n": 44, "q": "¿Y si la siniestralidad sube a 60%?", "a": "Sigue dentro de lo que el plan asumía. Si pasa de ahí, actúo por segmento: tarifa por edad, carencias y límites del plan senior, que es donde más pesa. No freno la venta en general: freno o ajusto el segmento que la sube.", "eval": "si sabes qué palanca mover cuando cambia el riesgo.", "avoid": "", "tip": "", "id": "ens43"}, {"src": "ens", "group": "Bloque 9 · Sobre ti y el rol", "n": 45, "q": "¿Cuál es el mayor riesgo de tu plan?", "a": "La ejecución entre áreas: casi todas las palancas dependen de Comercial, Tecnología, Cobros o Legal. Por eso pongo un dueño por palanca y un tablero semanal. El segundo riesgo es la adopción de Colectivo, y por eso uso 3%, muestro el escenario con la mitad y lo valido con RRHH antes de escalar.", "eval": "autocrítica.", "avoid": "", "tip": "", "id": "ens44"}, {"src": "ens", "group": "Bloque 9 · Sobre ti y el rol", "n": 46, "q": "¿Qué no sabes y te gustaría saber?", "a": "Tres cosas: el costo real por canal, para saber cuánto cuesta cada póliza; la comisión efectiva y los gastos, para calcular el margen; y las cohortes, para ver cuánto dura una póliza según cómo se vendió. Con eso paso de crecer en pólizas a crecer en valor. Son los primeros datos que pido.", "eval": "humildad y criterio para pedir datos.", "avoid": "", "tip": "", "id": "ens45"}, {"src": "ini", "group": "Iniciativa 1 · Sarah y web: recomendador, cotizador y comparativo", "q": "¿Por qué arreglar Sarah antes de invertir en pauta digital?", "a": "Porque hoy Sarah pierde 28% de lo que vende. Si compro tráfico antes de corregir el flujo, pago por clientes que se van a caer. Primero se corrige la calidad (S1–S6) y después se sube el volumen.", "id": "ini46"}, {"src": "ini", "group": "Iniciativa 1 · Sarah y web: recomendador, cotizador y comparativo", "q": "¿Un recomendador no empuja a todos al plan más caro?", "a": "No es el objetivo. El recomendador sugiere según el perfil: Básico para quien busca protección esencial (personas 2 y 4) y Plus para quien quiere más respaldo (personas 1 y 3). Un cliente que compra el plan correcto se queda más tiempo, y eso vale más que una prima mayor que se anula.", "id": "ini47"}, {"src": "ini", "group": "Iniciativa 1 · Sarah y web: recomendador, cotizador y comparativo", "q": "Tu prueba de compra fue un solo caso. ¿No es anecdótico?", "a": "Sí, es un caso y lo presento así. Me sirvió para formular hipótesis. Las confirmo en la semana 1 con el abandono de cotización por paso: si la gente no abandona en la pregunta de edad, ese cambio baja de prioridad.", "id": "ini48"}, {"src": "ini", "group": "Iniciativa 1 · Sarah y web: recomendador, cotizador y comparativo", "q": "¿Cómo sabes que +15 ventas al mes es alcanzable?", "a": "Es un aumento de ~38% sobre ~39 al mes, que sale de dos fuentes: menos abandono en el cotizador y seguimiento de cotizaciones no cerradas, que hoy no se hace. Si en S6 vamos por debajo del 80% de la meta, el esfuerzo se mueve a otra palanca.", "id": "ini49"}, {"src": "ini", "group": "Iniciativa 1 · Sarah y web: recomendador, cotizador y comparativo", "q": "¿Qué haces con los duplicados?", "a": "Validación de cédula y mascota antes de emitir. Son 24 anulaciones que generamos nosotros: no requieren convencer a nadie, solo corregir el proceso.", "id": "ini50"}, {"src": "ini", "group": "Iniciativa 1 · Sarah y web: recomendador, cotizador y comparativo", "q": "¿Y si Tecnología no tiene capacidad?", "a": "Hago la versión sin desarrollo y la mido. Si mejora la conversión, ese dato justifica la prioridad para el siguiente trimestre.", "id": "ini51"}, {"src": "ini", "group": "Iniciativa 2 · Campaña a asegurados de Humano", "q": "¿No vas a molestar a clientes de salud con correos de mascotas?", "a": "Por eso son solo dos olas y segmentadas, no un envío masivo repetido. Además el mensaje es un beneficio («protege a tu mascota con la aseguradora que ya conoces»), no una venta agresiva. Mido bajas de suscripción como alerta.", "id": "ini52"}, {"src": "ini", "group": "Iniciativa 2 · Campaña a asegurados de Humano", "q": "¿Cómo sabes quién tiene mascota?", "a": "No lo sé de entrada. Uso un perfil probable (edad, tipo de hogar, ciudad) y la primera ola me da el dato real de respuesta. La segunda ola se ajusta con lo que funcionó.", "id": "ini53"}, {"src": "ini", "group": "Iniciativa 2 · Campaña a asegurados de Humano", "q": "¿20 pólizas al mes de dónde sale?", "a": "Es una meta de partida que se mide en pólizas cada 1,000 contactos. Depende del tamaño de la base, que pido en la semana 1. Si la base es más chica, ajusto la meta con ese dato.", "id": "ini54"}, {"src": "ini", "group": "Iniciativa 2 · Campaña a asegurados de Humano", "q": "¿Por qué es la segunda palanca más grande si nunca se hizo?", "a": "Porque combina tres cosas: base grande, confianza previa y costo casi cero. Por eso aporta +102 a jul-27, aunque arranque en abril.", "id": "ini55"}, {"src": "ini", "group": "Iniciativa 2 · Campaña a asegurados de Humano", "q": "¿Hay restricciones legales para usar datos de clientes de otros ramos?", "a": "Es una pregunta para Legal y Cumplimiento antes de la primera ola. Si el consentimiento no cubre ofertas de otros ramos, uso los canales donde el cliente ya interactúa con Humano (factura, portal, corredor) en lugar de correo directo.", "id": "ini56"}, {"src": "ini", "group": "Iniciativa 3 · Intermediarios: kit, incentivo, APP y Savy", "q": "¿Por qué el incentivo paga por retención a 90 días?", "a": "Porque el canal tradicional ya anula 27%. Si pago solo por emitir, compro volumen que se cae. Pagar por pólizas activas a 90 días alinea al corredor con la calidad.", "id": "ini57"}, {"src": "ini", "group": "Iniciativa 3 · Intermediarios: kit, incentivo, APP y Savy", "q": "Con una prima de ~RD$750 al mes, ¿al corredor le interesa?", "a": "Por sí sola, poco. Por eso el foco es el APP, donde vender toma minutos, y la venta como complemento de otra póliza. El corredor no hace una visita para vender mascotas: la suma a una venta que ya está haciendo.", "id": "ini58"}, {"src": "ini", "group": "Iniciativa 3 · Intermediarios: kit, incentivo, APP y Savy", "q": "¿Qué es Savy y por qué no tiene meta propia?", "a": "Es el bot de intermediarios y emitió 5 pólizas. Es muy poco para darle meta aparte, así que entra al kit como una vía más de cotizar y emitir, dentro de la meta de intermediarios.", "id": "ini59"}, {"src": "ini", "group": "Iniciativa 3 · Intermediarios: kit, incentivo, APP y Savy", "q": "¿Por qué el canal tradicional anula 27%?", "a": "Es una hipótesis a confirmar con las cohortes de la semana 1: puede ser venta empujada sin explicar coberturas o cobro con tarjeta que vence. Por eso el kit incluye el comparativo y el incentivo premia retención.", "id": "ini60"}, {"src": "ini", "group": "Iniciativa 3 · Intermediarios: kit, incentivo, APP y Savy", "q": "¿Cómo evitas que los corredores ignoren el kit?", "a": "Empiezo por pocos corredores con buena cartera de personas, no por todos. Con sus resultados armo un caso de éxito para el resto.", "id": "ini61"}, {"src": "ini", "group": "Iniciativa 4 · Telemarketing saliente y oficinas", "q": "¿Telemarketing no es un canal caro y en declive?", "a": "Por eso no lo uso para llamar en frío. Lo uso con bases calientes: gente que cotizó y no terminó. Es equipo propio y la meta es modesta (+10 al mes).", "id": "ini62"}, {"src": "ini", "group": "Iniciativa 4 · Telemarketing saliente y oficinas", "q": "¿Por qué el segmento de 50 años o más?", "a": "Porque las personas 3 y 4 (50 a 65 y 65+) prefieren asesor y llamada telefónica, según las buyer personas del caso. Para ellos el canal digital no es el natural.", "id": "ini63"}, {"src": "ini", "group": "Iniciativa 4 · Telemarketing saliente y oficinas", "q": "¿Qué hace exactamente una oficina?", "a": "Al cliente que viene a pagar o consultar otro ramo se le hacen tres preguntas: si tiene mascota, de qué tipo y si le interesa protegerla. Si dice que sí, se le da un QR a Sarah o se le cotiza ahí. No hace falta personal nuevo.", "id": "ini64"}, {"src": "ini", "group": "Iniciativa 4 · Telemarketing saliente y oficinas", "q": "El 0% de oficinas es con 10 pólizas. ¿No es engañoso?", "a": "Sí, es una muestra pequeña y no decido con ella. Oficinas no tiene meta propia: está dentro de los +10 de telemarketing.", "id": "ini65"}, {"src": "ini", "group": "Iniciativa 5 · Recuperar anuladas", "q": "¿No es más fácil vender a alguien nuevo que recuperar a quien se fue?", "a": "En este caso no, porque la mayoría no se fue: se le venció la tarjeta. Ya conocen el producto y le dieron buena nota. Es la venta con menos fricción que tenemos.", "id": "ini66"}, {"src": "ini", "group": "Iniciativa 5 · Recuperar anuladas", "q": "¿Por qué solo 40 de 140?", "a": "Porque es una meta prudente: asume que tres de cada cuatro no responden o ya no tienen la mascota o el interés. Si el dato de la semana 1 muestra que muchos intentaron pagar después del día 30, la subo.", "id": "ini67"}, {"src": "ini", "group": "Iniciativa 5 · Recuperar anuladas", "q": "¿Reactivar con carencia nueva o sin carencia?", "a": "Lo define Actuaría. Mi propuesta es evaluar reactivar sin carencia nueva en una ventana corta, porque la baja fue involuntaria. Si el riesgo es alto, se mantiene la carencia y se compensa con otra oferta, como el pago anual con descuento.", "id": "ini68"}, {"src": "ini", "group": "Iniciativa 5 · Recuperar anuladas", "q": "¿Qué pasa con las 32 que se fueron por solicitud propia?", "a": "No las trato igual: esas pasan por el save desk (iniciativa 7) y por la encuesta de salida, para entender por qué se fueron.", "id": "ini69"}, {"src": "ini", "group": "Iniciativa 6 · Cobro: aviso de vencimiento y ventana 30/60/90", "q": "Si es la causa principal de bajas, ¿por qué aporta solo +28?", "a": "Porque la cartera de hoy es chica (792): medio punto menos de anulación sobre una base pequeña son pocas pólizas al principio. Su valor crece con la cartera: con 4,000 pólizas, ese medio punto son unas 20 pólizas por mes. Y es la palanca más barata.", "id": "ini70"}, {"src": "ini", "group": "Iniciativa 6 · Cobro: aviso de vencimiento y ventana 30/60/90", "q": "¿Qué es la actualización automática de tarjetas?", "a": "Es un servicio de las redes de tarjetas que, a través del procesador, actualiza el número o la fecha cuando el banco emite una tarjeta nueva, sin que el cliente haga nada. Lo verifico con el procesador en la semana 1. Si no está disponible, el aviso con enlace sigue siendo la base.", "id": "ini71"}, {"src": "ini", "group": "Iniciativa 6 · Cobro: aviso de vencimiento y ventana 30/60/90", "q": "¿La ventana de 30/60/90 no regala cobertura?", "a": "No la propongo como decisión, sino como opción a evaluar con Legal y Actuaría. La decide un dato: cuántas de las 140 intentaron pagar después del día 30. Si son pocas, la descarto.", "id": "ini72"}, {"src": "ini", "group": "Iniciativa 6 · Cobro: aviso de vencimiento y ventana 30/60/90", "q": "¿Cómo sabremos en dos semanas si funciona?", "a": "Con la tasa de actualización de tarjeta: de cada 100 avisos, cuántos actualizan antes del vencimiento. Es un indicador que se ve mucho antes que la anulación mensual.", "id": "ini73"}, {"src": "ini", "group": "Iniciativa 6 · Cobro: aviso de vencimiento y ventana 30/60/90", "q": "¿Por qué 1.5% y no más bajo?", "a": "Porque 1.5% pone a Mi Mascota al nivel de una referencia internacional del sector (Trupanion, ~1.6% de bajas al mes). Es una meta exigente pero comparable.", "id": "ini74"}, {"src": "ini", "group": "Iniciativa 7 · Save desk, pago anual y bienvenida", "q": "¿Un descuento por pago anual no reduce el ingreso?", "a": "Reduce un poco la prima, pero cobra un año por adelantado y elimina el riesgo de tarjeta vencida durante 12 meses. El tamaño del descuento lo define Producto con Actuaría para que el resultado neto sea positivo.", "id": "ini75"}, {"src": "ini", "group": "Iniciativa 7 · Save desk, pago anual y bienvenida", "q": "¿Bajar de Plus a Básico no es perder prima?", "a": "Es perder parte de la prima en lugar de toda. Un cliente en Básico que se queda vale más que uno en Plus que se va.", "id": "ini76"}, {"src": "ini", "group": "Iniciativa 7 · Save desk, pago anual y bienvenida", "q": "¿Para qué la bienvenida?", "a": "Porque claridad de coberturas es la nota más baja (73). Un cliente que entiende qué cubre su seguro en el primer mes es menos probable que anule por solicitud propia.", "id": "ini77"}, {"src": "ini", "group": "Iniciativa 8 · Colectivo: 30 empresas en el embudo", "q": "¿Por qué 30 empresas y no 100?", "a": "Porque con un ejecutivo dedicado, 30 es un embudo que se puede trabajar bien en un trimestre. Con una conversión de una de cada seis se llega a las 5 firmas. Es mejor un embudo trabajado que una lista larga sin seguimiento.", "id": "ini78"}, {"src": "ini", "group": "Iniciativa 8 · Colectivo: 30 empresas en el embudo", "q": "¿Por qué empresas de 200 o más colaboradores?", "a": "Por la economía de la venta: con 3% de adopción, una empresa de 50 colaboradores da 1 o 2 pólizas y no paga el esfuerzo. Con 500 da unas 15.", "id": "ini79"}, {"src": "ini", "group": "Iniciativa 8 · Colectivo: 30 empresas en el embudo", "q": "¿Por qué empezar por clientes empresariales de Humano?", "a": "Porque RRHH ya nos conoce y hay una relación. Es la puerta con menos fricción. Lo pongo como condicional porque necesito confirmar que la lista existe.", "id": "ini80"}, {"src": "ini", "group": "Iniciativa 8 · Colectivo: 30 empresas en el embudo", "q": "¿Qué pasa con las pymes?", "a": "Quedan para una segunda ola, posiblemente a través de gremios o asociaciones que agrupen a varias empresas pequeñas en un solo acuerdo.", "id": "ini81"}, {"src": "ini", "group": "Iniciativa 9 · Colectivo: kit B2B, evento y firmas (sin nómina)", "q": "¿Por qué fase 1 sin nómina?", "a": "Porque el descuento por nómina requiere aprobaciones de Legal, Operaciones y de cada empresa, y eso tarda meses. Con código de empresa y tarjeta se puede vender en semanas. La nómina llega en la fase 2, cuando ya hay adopción que la justifique.", "id": "ini82"}, {"src": "ini", "group": "Iniciativa 9 · Colectivo: kit B2B, evento y firmas (sin nómina)", "q": "Si en la fase 1 se paga con tarjeta, ¿no se repite el problema de las tarjetas vencidas?", "a": "Sí, y lo reconozco. Por eso la fase 1 también entra al flujo de aviso de vencimiento (iniciativa 6), y la fase 2 por nómina lo resuelve de raíz.", "id": "ini83"}, {"src": "ini", "group": "Iniciativa 9 · Colectivo: kit B2B, evento y firmas (sin nómina)", "q": "¿Qué gana la empresa?", "a": "Un beneficio que no le cuesta, que ayuda a atraer y retener talento y que muestra cuidado por el bienestar del colaborador. Para RRHH es fácil de aprobar porque no consume presupuesto.", "id": "ini84"}, {"src": "ini", "group": "Iniciativa 9 · Colectivo: kit B2B, evento y firmas (sin nómina)", "q": "¿Qué gana el colaborador frente a comprar por Sarah?", "a": "Una tarifa colectiva preferencial y, en la fase 2, el descuento por nómina. Sin una ventaja clara, compraría por Sarah y Colectivo no sumaría ventas nuevas.", "id": "ini85"}, {"src": "ini", "group": "Iniciativa 9 · Colectivo: kit B2B, evento y firmas (sin nómina)", "q": "¿El evento no es caro por póliza?", "a": "Puede serlo, por eso se presupuesta en la semana 2 y se compara el costo por póliza con el del canal digital. Un evento con varias empresas reparte el costo.", "id": "ini86"}, {"src": "ini", "group": "Iniciativa 9 · Colectivo: kit B2B, evento y firmas (sin nómina)", "q": "¿Por qué 3% de adopción?", "a": "En EE.UU. contrata entre 5% y 11% de los elegibles. Aquí el seguro de mascotas es menos conocido, así que uso 3% y lo valido con la encuesta a RRHH antes de escalar.", "id": "ini87"}, {"src": "ini", "group": "Iniciativa 9 · Colectivo: kit B2B, evento y firmas (sin nómina)", "q": "¿Cuándo decides si escalar?", "a": "En la semana 12, con una regla escrita de antemano: adopción de 3% o más y anulación a 90 días de 15% o menos confirman el ritmo de 3 empresas nuevas al mes desde abril. Si no se cumple, se ajusta la oferta con lo que dijo RRHH.", "id": "ini88"}, {"src": "ini", "group": "Iniciativa 9 · Colectivo: kit B2B, evento y firmas (sin nómina)", "q": "¿Cuánto vale una empresa?", "a": "500 colaboradores × 3% = 15 pólizas, unos RD$0.17 MM al año a precio de lista. Con 3 empresas nuevas al mes son 45 pólizas al mes en julio.", "id": "ini89"}, {"src": "ini", "group": "Iniciativa 10 · Veterinarias con código de referido", "q": "¿Qué gana la veterinaria?", "a": "Un cliente asegurado vuelve más y se atiende antes, porque el costo le pesa menos. A futuro, una red de veterinarias preferidas con pago directo le da cobro rápido y seguro. El código es para medir, no para convertir al veterinario en vendedor.", "id": "ini90"}, {"src": "ini", "group": "Iniciativa 10 · Veterinarias con código de referido", "q": "¿Una póliza por punto al mes no es muy poco?", "a": "Es una meta prudente a propósito. El valor del canal está en escalar puntos (de 10 a 25) y en el prestigio de la recomendación. Si un punto rinde más, se replica ese modelo.", "id": "ini91"}, {"src": "ini", "group": "Iniciativa 10 · Veterinarias con código de referido", "q": "¿Hay conflicto de interés si el veterinario recomienda un seguro que le reembolsa?", "a": "Por eso el producto mantiene el veterinario de libre elección y el código solo mide la recomendación. Si hubiera incentivo económico al veterinario, lo revisa Cumplimiento.", "id": "ini92"}, {"src": "ini", "group": "Iniciativa 11 · Bancaseguros 2.0: cooperativas y banca digital", "q": "¿Qué es distinto en la versión 2.0?", "a": "Tres cosas. El canal: cooperativas y banca digital antes que los bancos grandes. El producto: integrado a la cuenta con débito automático, que no vence como una tarjeta. El argumento: datos propios de siniestralidad y retención que antes no existían.", "id": "ini93"}, {"src": "ini", "group": "Iniciativa 11 · Bancaseguros 2.0: cooperativas y banca digital", "q": "¿Por qué cooperativas?", "a": "Porque deciden más rápido, tienen relación cercana con sus socios y buscan beneficios para ofrecerles. Es más fácil cerrar un piloto con ellas que con un banco grande.", "id": "ini94"}, {"src": "ini", "group": "Iniciativa 11 · Bancaseguros 2.0: cooperativas y banca digital", "q": "¿Un acuerdo en 13 semanas no es optimista?", "a": "Puede serlo. Por eso la ruta no depende de esto: sin Bancaseguros llego al 97% en julio y a la meta en agosto. Si el acuerdo llega antes, es colchón.", "id": "ini95"}, {"src": "ini", "group": "Iniciativa 11 · Bancaseguros 2.0: cooperativas y banca digital", "q": "¿Por qué Bancaseguros lo lidera Gestión de Portafolio?", "a": "Porque es una negociación entre áreas (Producto, Actuaría, Legal, Tecnología y Comercial) y necesita a alguien que coordine la propuesta completa con datos de cartera. Comercial cierra la relación.", "id": "ini96"}, {"src": "ini", "group": "Iniciativa 12 · Datos de la semana 1", "q": "¿No deberías tener estos datos antes de proponer?", "a": "Propuse con los datos del caso y dejé explícito qué supuestos dependen de datos que no tengo. Pedirlos en la semana 1 me permite ajustar rápido en lugar de esperar a tener todo perfecto para empezar.", "id": "ini97"}, {"src": "ini", "group": "Iniciativa 12 · Datos de la semana 1", "q": "¿Qué pasa si los datos contradicen tu diagnóstico?", "a": "Ajusto el plan. Cada supuesto tiene un dato que lo confirma o lo descarta, y el tablero lo hace visible. Es mejor corregir en la semana 2 que en el mes 6.", "id": "ini98"}, {"src": "ini", "group": "Iniciativa 13 · Revisión de producto: senior, felino y tarifa", "q": "¿Por qué no lanzar ya un plan senior o felino?", "a": "Porque primero hay que resolver la distribución y la fuga, que explican la brecha. La revisión de producto prepara las decisiones con datos de siniestralidad por edad para no lanzar algo que después sea deficitario.", "id": "ini99"}, {"src": "ini", "group": "Iniciativa 13 · Revisión de producto: senior, felino y tarifa", "q": "¿Subirías la tarifa?", "a": "Solo si la siniestralidad por plan y edad lo justifica. Hoy está en 30%, frente a 60% del plan, así que no es urgente. Lo que sí miro es la tarifa por edad para un posible plan senior.", "id": "ini100"}, {"src": "ini", "group": "Iniciativa 14 · Tablero semanal por palanca y comité", "q": "¿Qué ve el comité?", "a": "Cinco números: ventas al mes, anulación mensual, empresas de Colectivo firmadas, veterinarias activas y acuerdos de Bancaseguros. Y el semáforo por palanca con su dueño.", "id": "ini101"}, {"src": "ini", "group": "Iniciativa 14 · Tablero semanal por palanca y comité", "q": "¿Por qué semanal y no mensual?", "a": "Porque en un trimestre solo hay tres cierres mensuales. Con un tablero semanal, una palanca atrasada se detecta en una o dos semanas y queda tiempo para corregir.", "id": "ini102"}, {"src": "ini", "group": "Iniciativa 14 · Tablero semanal por palanca y comité", "q": "¿Quién decide si se mueve el esfuerzo?", "a": "La regla está escrita de antemano (por debajo de 80%), así que la mayoría de los movimientos no requieren debate. Lo que implica recursos de otra área se lleva al comité con datos.", "id": "ini103"}, {"src": "ini", "group": "Preguntas transversales sobre el plan", "q": "Son 14 iniciativas en 13 semanas. ¿No es demasiado?", "a": "Son muchas, pero no todas pesan igual ni usan a las mismas personas. Cada una tiene un dueño en un área distinta. Mi papel es coordinarlas, no ejecutarlas todas. Si hay que recortar, mantengo el aviso de vencimiento, la campaña a asegurados y Colectivo.", "id": "ini104"}, {"src": "ini", "group": "Preguntas transversales sobre el plan", "q": "¿Cuál es la iniciativa con mejor relación entre costo y resultado?", "a": "El aviso de vencimiento de tarjeta: costo bajo, ataca la primera causa de bajas y su efecto crece con la cartera. Le sigue la campaña a asegurados de Humano, que no paga comisión.", "id": "ini105"}, {"src": "ini", "group": "Preguntas transversales sobre el plan", "q": "¿Cuál es la más arriesgada?", "a": "Bancaseguros 2.0, porque depende de un tercero. Por eso la ruta no depende de ella: sin Bancaseguros llego al 97% en julio.", "id": "ini106"}, {"src": "ini", "group": "Preguntas transversales sobre el plan", "q": "¿Qué iniciativas dan resultados primero?", "a": "Las de calidad y retención: duplicados, aviso de vencimiento y recuperar anuladas dan resultados en 4 a 6 semanas. Los canales nuevos venden desde abril y mayo.", "id": "ini107"}, {"src": "ini", "group": "Preguntas transversales sobre el plan", "q": "¿Qué necesitas que no tienes?", "a": "Tres cosas: aprobación del aviso de vencimiento y de la campaña a asegurados, un ejecutivo B2B dedicado a Colectivo y un mandato para Bancaseguros 2.0 con cooperativas.", "id": "ini108"}, {"src": "ini", "group": "Preguntas transversales sobre el plan", "q": "Si todo sale bien en marzo, ¿qué sigue?", "a": "Escalar lo que funcionó: más empresas en Colectivo, de 10 a 25 veterinarias, la fase 2 por nómina y las decisiones de producto (senior y felino) para abrir segmentos que hoy no se atienden.", "id": "ini109"}, {"src": "ini", "group": "Preguntas transversales sobre el plan", "q": "¿Cómo encaja Mi Mascota en el resto del portafolio de Humano?", "a": "Como un producto de venta cruzada que fortalece la relación con el cliente: quien tiene salud y mascota con Humano tiene más razones para quedarse. Por eso la campaña a asegurados y Colectivo, que usan la base existente de Humano, son dos de las palancas más grandes.", "id": "ini110"}], "cifras": "792 pólizas vigentes · 74% del plan a sep-26 (~1,076, interpolado) · satisfacción 92 · siniestralidad 30% (plan 60%) · ritmo de ~21 a ~60 ventas al mes (×2.8) · 65% de las ventas por Sarah y web · 218 bajas, 177 evitables (81%), 140 por tarjeta vencida (64%) · claridad de coberturas 73 · ruta a 1,892 en jul-27 (102% de 1,855) y 4,122 en jul-28 (125% del Año 4) · motor actual +369, retención +28, canales nuevos +300 · palancas al 80%: meta en ago-27 · base 53: 98% · de 60 a ~130 ventas al mes en 90 días.", "escenarios": "sin Bancaseguros 1,808 (97%) · sin Colectivo 1,750 (94%) · Colectivo a la mitad 1,821 (98%) · palancas al 60%: 1,625 (88%) · sin palancas 1,196 (64%)."};
+const KEY = "ensayo-mimascota-v1";
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = s => { s = Math.max(0, Math.round(s)); return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); };
+
+let st = {slideRate:{}, slideTime:{}, q:{}};
+try { const raw = localStorage.getItem(KEY); if (raw) st = Object.assign(st, JSON.parse(raw)); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
+
+/* ---------- pestañas ---------- */
+let view = "expo";
+function show(v){
+  view = v;
+  document.querySelectorAll("nav button").forEach(b => b.setAttribute("aria-selected", b.dataset.view === v));
+  ["guide","expo","qa","res"].forEach(k => $("#view-"+k).hidden = k !== v);
+  if (v === "res") renderRes();
+  if (v === "qa") renderQ();
+  if (v !== "qa") stopCountdown();
+}
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => show(b.dataset.view));
+
+/* ---------- exposición ---------- */
+const S = DATA.slides, TOTAL_OBJ = S.reduce((a,s) => a + s.secs, 0), TOPE = 20*60;
+let cur = 0, running = false, lastTick = 0, mode = "cues", peek = new Set();
+
+function renderRail(){
+  $("#rail").innerHTML = S.map((s,i) => `<button data-i="${i}" aria-current="${i===cur}">
+    <span class="num">${s.n}</span><span class="t">${esc(s.title)}</span><span class="dot ${st.slideRate[s.n] ? "r"+st.slideRate[s.n] : ""}" aria-label="${rateLabel(st.slideRate[s.n])}"></span></button>`).join("");
+  $("#rail").querySelectorAll("button").forEach(b => b.onclick = () => go(+b.dataset.i));
+}
+const rateLabel = r => ({3:"Fluida",2:"Con dudas",1:"Me trabé"}[r] || "Sin calificar");
+
+function renderSlide(){
+  const s = S[cur];
+  $("#slideEyebrow").textContent = `Slide ${s.n} de ${S.length} · objetivo ${fmt(s.secs)}`;
+  $("#slideTitle").textContent = s.title;
+  $("#parts").innerHTML = mode === "none" ? `<p class="hint">Sin ayuda: presenta la slide de memoria. Cambia a "Solo pistas" si te pierdes.</p>` :
+    s.parts.map((p,i) => {
+      const open = mode === "full" || peek.has(i);
+      return `<div class="part"><button data-i="${i}" aria-expanded="${open}">${esc(p.label)}</button>${open ? `<p>${esc(p.text)}</p>` : ""}</div>`;
+    }).join("");
+  $("#parts").querySelectorAll("button").forEach(b => b.onclick = () => { const i = +b.dataset.i; peek.has(i) ? peek.delete(i) : peek.add(i); renderSlide(); });
+  $("#slideRate").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", +b.dataset.r === st.slideRate[s.n]));
+  $("#prev").disabled = cur === 0;
+  $("#next").textContent = cur === S.length-1 ? "Terminar y ver resultados" : "Siguiente →";
+  renderTimers(); renderRail();
+}
+function renderTimers(){
+  const s = S[cur], t = st.slideTime[s.n] || 0, tot = S.reduce((a,x) => a + (st.slideTime[x.n] || 0), 0);
+  $("#tSlideV").textContent = fmt(t);
+  $("#tSlideT").textContent = `Objetivo ${fmt(s.secs)}` + (t > s.secs ? ` · +${fmt(t - s.secs)}` : "");
+  setTimer($("#tSlide"), t / s.secs);
+  $("#tTotalV").textContent = fmt(tot);
+  setTimer($("#tTotal"), tot / TOTAL_OBJ, tot > TOPE);
+}
+function setTimer(el, ratio, hardOver){
+  el.querySelector(".bar i").style.width = Math.min(100, ratio*100) + "%";
+  el.classList.toggle("over", hardOver || ratio > 1.2);
+  el.classList.toggle("warn", !hardOver && ratio > 1 && ratio <= 1.2);
+}
+function go(i){ if (i < 0 || i >= S.length) return; cur = i; peek.clear(); renderSlide(); save(); }
+function toggle(){
+  running = !running; lastTick = performance.now();
+  $("#play").textContent = running ? "Pausar" : "Continuar";
+}
+setInterval(() => {
+  if (!running) return;
+  const now = performance.now(), n = S[cur].n;
+  st.slideTime[n] = (st.slideTime[n] || 0) + (now - lastTick)/1000; lastTick = now;
+  renderTimers();
+  if (Math.round(st.slideTime[n]) % 5 === 0) save();
+}, 250);
+$("#play").onclick = toggle;
+$("#prev").onclick = () => go(cur-1);
+$("#next").onclick = () => { if (cur === S.length-1) { if (running) toggle(); save(); show("res"); } else go(cur+1); };
+let resetArm = null;
+function armed(btn, label, fn){
+  if (resetArm === btn) { fn(); resetArm = null; btn.textContent = label; return; }
+  resetArm = btn; btn.textContent = "Clic de nuevo para confirmar";
+  setTimeout(() => { if (resetArm === btn) { resetArm = null; btn.textContent = label; } }, 3000);
+}
+$("#resetExpo").onclick = e => armed(e.target, "Reiniciar tiempos", () => {
+  st.slideTime = {}; running = false; $("#play").textContent = "Iniciar"; go(0); save();
+});
+document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
+  mode = b.dataset.mode; peek.clear();
+  document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  renderSlide();
+});
+$("#slideRate").querySelectorAll("button").forEach(b => b.onclick = () => {
+  const n = S[cur].n, r = +b.dataset.r;
+  st.slideRate[n] === r ? delete st.slideRate[n] : st.slideRate[n] = r;
+  save(); renderSlide();
+});
+
+/* ---------- preguntas ---------- */
+const Q = DATA.questions;
+const SCORE = {3:1, 2:.5, 1:0};
+let deck = [], qi = 0, revealed = false, cdTimer = null, cdStart = 0;
+$("#cifras").textContent = DATA.cifras;
+$("#escen").textContent = DATA.escenarios;
+
+function groupsFor(src){ return [...new Set(Q.filter(q => src === "all" || q.src === src).map(q => q.group))]; }
+function fillGroups(){
+  const keep = $("#fGroup").value;
+  const gs = groupsFor($("#fSrc").value);
+  $("#fGroup").innerHTML = `<option value="all">Todos</option>` + gs.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join("");
+  if (gs.includes(keep)) $("#fGroup").value = keep;
+}
+function buildDeck(){
+  const src = $("#fSrc").value, g = $("#fGroup").value, f = $("#fState").value;
+  deck = Q.filter(q => (src === "all" || q.src === src) && (g === "all" || q.group === g) &&
+    (f === "all" || (f === "pending" && !st.q[q.id]) || (f === "weak" && st.q[q.id] && st.q[q.id] < 3)));
+  if ($("#fShuffle").checked) for (let i = deck.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [deck[i],deck[j]] = [deck[j],deck[i]]; }
+  qi = 0; revealed = false; renderQ();
+}
+["#fSrc","#fGroup","#fState","#fShuffle"].forEach(s => $(s).onchange = () => { if (s === "#fSrc") fillGroups(); buildDeck(); });
+$("#fTimer").onchange = () => renderQ();
+
+function renderQ(){
+  stopCountdown();
+  const box = $("#qcard");
+  renderProg();
+  if (!deck.length) { box.innerHTML = `<div class="empty"><h2>No hay preguntas con este filtro</h2><p>Cambia el bloque o elige "Todas" en Mostrar.</p></div>`; return; }
+  if (qi >= deck.length) {
+    box.innerHTML = `<div class="empty"><h2>Terminaste esta tanda</h2><p>${deck.length} preguntas. Revisa tu seguridad en Resultados o repasa las que fallaste.</p>
+      <div class="row" style="justify-content:center;margin-top:12px"><button class="btn primary" id="toRes">Ver resultados</button><button class="btn" id="again">Otra vuelta</button></div></div>`;
+    $("#toRes").onclick = () => show("res"); $("#again").onclick = buildDeck; return;
+  }
+  const q = deck[qi], prev = st.q[q.id];
+  box.innerHTML = `
+    <div class="row"><span class="chip src">${q.src === "ens" ? "Ensayo jurado" + (q.n ? " · #" + q.n : "") : "Q&amp;A iniciativa"}</span><span class="chip">${esc(q.group)}</span>
+      ${prev ? `<span class="pill ${["","b","m","g"][prev]}" style="font-size:.75rem;padding:2px 9px;border-radius:99px">Antes: ${["","No la sabía","A medias","La sabía"][prev]}</span>` : ""}
+      <span class="hint" style="margin-left:auto">${qi+1} de ${deck.length}</span></div>
+    <div class="q">${esc(q.q)}</div>
+    ${q.eval ? `<div class="hint"><b>Qué evalúan:</b> ${esc(q.eval)}</div>` : ""}
+    ${$("#fTimer").checked ? `<div class="countdown" id="cd"><i></i></div><div class="hint mono" id="cdV">0:45</div>` : ""}
+    <label for="myAns" class="hint">Tus palabras clave (opcional, no se guardan)</label>
+    <textarea id="myAns" placeholder="Anota los datos que vas a usar..."></textarea>
+    <div id="ansBox"></div>
+    <div class="qnav" id="qnav"></div>`;
+  renderAnswer();
+  if ($("#fTimer").checked) startCountdown();
+}
+function renderAnswer(){
+  const q = deck[qi];
+  $("#ansBox").innerHTML = revealed ? `<div class="answer"><div class="eyebrow" style="margin-bottom:4px">Respuesta modelo</div><p>${esc(q.a)}</p></div>
+    ${q.avoid ? `<div class="note avoid"><b>Evita:</b> ${esc(q.avoid)}</div>` : ""}
+    ${q.tip ? `<div class="note tip">${esc(q.tip)}</div>` : ""}` : "";
+  $("#qnav").innerHTML = revealed
+    ? `<div class="row"><button class="btn g" data-r="3">La sabía</button><button class="btn m" data-r="2">A medias</button><button class="btn b" data-r="1">No la sabía</button></div>
+       <button class="btn" id="skip">Saltar →</button>`
+    : `<button class="btn" id="back" ${qi ? "" : "disabled"}>← Anterior</button><div class="row"><button class="btn" id="skip">Saltar →</button><button class="btn primary" id="reveal">Ver respuesta modelo</button></div>`;
+  $("#qnav").querySelectorAll("[data-r]").forEach(b => b.onclick = () => rate(+b.dataset.r));
+  $("#skip").onclick = () => nextQ();
+  const rv = $("#reveal"); if (rv) rv.onclick = reveal;
+  const bk = $("#back"); if (bk) bk.onclick = () => { qi--; revealed = false; renderQ(); };
+}
+function reveal(){ if (!deck[qi] || revealed) return; revealed = true; stopCountdown(); renderAnswer(); }
+function rate(r){ st.q[deck[qi].id] = r; save(); nextQ(); }
+function nextQ(){ qi++; revealed = false; renderQ(); }
+function renderProg(){
+  const done = deck.filter(q => st.q[q.id]);
+  $("#qProg").textContent = `${done.length} / ${deck.length} calificadas`;
+  $("#qTrack").innerHTML = deck.length ? [3,2,1].map(r => `<i class="${["","b","m","g"][r]}" style="width:${done.filter(q => st.q[q.id] === r).length/deck.length*100}%"></i>`).join("") : "";
+}
+function startCountdown(){
+  cdStart = performance.now();
+  cdTimer = setInterval(() => {
+    const el = $("#cd"); if (!el) return stopCountdown();
+    const left = 45 - (performance.now() - cdStart)/1000;
+    el.querySelector("i").style.width = Math.max(0, left/45*100) + "%";
+    el.classList.toggle("late", left < 10);
+    $("#cdV").textContent = left > 0 ? fmt(left) : "Tiempo. Cierra la idea y mira la respuesta.";
+    if (left <= 0) stopCountdown();
+  }, 200);
+}
+function stopCountdown(){ clearInterval(cdTimer); cdTimer = null; }
+
+/* ---------- resultados ---------- */
+const pct = arr => arr.length ? Math.round(arr.reduce((a,r) => a + SCORE[r], 0) / arr.length * 100) : null;
+const level = p => p === null ? ["n","Sin datos"] : p >= 80 ? ["g","Seguro"] : p >= 50 ? ["m","En camino"] : ["b","A repasar"];
+function renderRes(){
+  const qr = Q.map(q => st.q[q.id]).filter(Boolean), sr = S.map(s => st.slideRate[s.n]).filter(Boolean);
+  const qp = pct(qr), sp = pct(sr), all = pct([...qr, ...sr]);
+  const tot = S.reduce((a,x) => a + (st.slideTime[x.n] || 0), 0);
+  const tile = (label, v, sub) => { const [c,t] = level(v); return `<div class="panel kpi"><div class="eyebrow">${label}</div><div class="v">${v === null ? "–" : v + "%"}</div><div class="hint">${sub}</div><span class="pill ${c}">${t}</span></div>`; };
+  $("#kpis").innerHTML = tile("Seguridad global", all, "Exposición y preguntas juntas") +
+    tile("Exposición", sp, `${sr.length} de ${S.length} slides calificadas · ${fmt(tot)} de ${fmt(TOTAL_OBJ)}`) +
+    tile("Preguntas", qp, `${qr.length} de ${Q.length} calificadas`);
+
+  const gs = [...new Set(Q.map(q => q.group))];
+  $("#groupBars").innerHTML = gs.map(g => {
+    const qs = Q.filter(q => q.group === g), rs = qs.map(q => st.q[q.id]).filter(Boolean), p = pct(rs), [c] = level(p);
+    const seg = [3,2,1].map(r => `<i class="${["","b","m","g"][r]}" style="width:${rs.filter(x => x === r).length/qs.length*100}%"></i>`).join("");
+    return `<div class="barrow"><span>${esc(g)}</span><div class="track" role="img" aria-label="${rs.length} de ${qs.length} calificadas">${seg}</div><span class="mono" style="text-align:right">${p === null ? "–" : `<span class="pill ${c}">${p}%</span>`} <span class="hint">${rs.length}/${qs.length}</span></span></div>`;
+  }).join("");
+
+  $("#timeTable").innerHTML = `<thead><tr><th>Slide</th><th>Objetivo</th><th>Real</th><th>Diferencia</th><th>Cómo salió</th></tr></thead><tbody>` +
+    S.map(s => { const t = st.slideTime[s.n] || 0, d = t - s.secs, r = st.slideRate[s.n];
+      return `<tr><td>${s.n} · ${esc(s.title)}</td><td class="mono">${fmt(s.secs)}</td><td class="mono">${t ? fmt(t) : "–"}</td>
+      <td class="mono" style="color:${!t ? "inherit" : d > s.secs*.2 ? "var(--bad)" : d > 0 ? "var(--mid)" : "var(--ok)"}">${t ? (d >= 0 ? "+" : "−") + fmt(Math.abs(d)) : "–"}</td>
+      <td>${r ? `<span class="pill ${["","b","m","g"][r]}">${rateLabel(r)}</span>` : "–"}</td></tr>`; }).join("") +
+    `<tr><td><b>Total</b></td><td class="mono"><b>${fmt(TOTAL_OBJ)}</b></td><td class="mono"><b>${fmt(tot)}</b></td><td class="mono" style="color:${tot > TOPE ? "var(--bad)" : "inherit"}">${tot ? (tot >= TOTAL_OBJ ? "+" : "−") + fmt(Math.abs(tot - TOTAL_OBJ)) : "–"}</td><td></td></tr></tbody>`;
+
+  const weak = Q.filter(q => st.q[q.id] && st.q[q.id] < 3).sort((a,b) => st.q[a.id] - st.q[b.id]);
+  $("#weakList").innerHTML = weak.length ? weak.map(q => `<li><span class="pill ${st.q[q.id] === 1 ? "b" : "m"}">${st.q[q.id] === 1 ? "No" : "A medias"}</span><span>${esc(q.q)} <span class="hint">· ${esc(q.group)}</span></span></li>`).join("")
+    : `<li class="hint">Nada pendiente todavía. Las preguntas que marques "a medias" o "no la sabía" aparecen aquí.</li>`;
+  $("#goWeak").disabled = !weak.length;
+}
+$("#goWeak").onclick = () => { $("#fSrc").value = "all"; fillGroups(); $("#fGroup").value = "all"; $("#fState").value = "weak"; buildDeck(); show("qa"); };
+$("#resetAll").onclick = e => armed(e.target, "Borrar todo el progreso", () => {
+  st = {slideRate:{}, slideTime:{}, q:{}}; save(); running = false; $("#play").textContent = "Iniciar"; go(0); buildDeck(); renderRes();
+});
+
+/* ---------- teclado ---------- */
+document.addEventListener("keydown", e => {
+  if (e.target.matches("textarea, select, input") || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (view === "expo") {
+    if (e.key === " ") { e.preventDefault(); toggle(); }
+    else if (e.key === "ArrowRight") $("#next").click();
+    else if (e.key === "ArrowLeft") go(cur-1);
+  } else if (view === "qa" && deck[qi]) {
+    if (e.key === " ") { e.preventDefault(); reveal(); }
+    else if (revealed && ["1","2","3"].includes(e.key)) rate({1:3,2:2,3:1}[e.key]);
+    else if (e.key === "ArrowRight") nextQ();
+  }
+});
+
+$("#startExpo").onclick = () => show("expo");
+$("#startQa").onclick = () => show("qa");
+fillGroups(); buildDeck(); renderSlide();
+show(st.seenGuide ? "expo" : "guide"); // la guía se abre sola la primera vez
+st.seenGuide = true; save();
+</script>
+
+</body>
+</html>
